@@ -37,16 +37,16 @@ public class JerryIndexUtil {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         log.info("d5sum {}", d5sum);
 
-        List<BigDecimal> d125 = fundGrowthValueList.parallelStream()
-                .limit(125L)
+        List<BigDecimal> d123 = fundGrowthValueList.parallelStream()
+                .limit(123L)
                 .collect(Collectors.toList());
-        log.info("d125 {}", d125);
+        log.info("d123 {}", d123);
 
-        BigDecimal d125SumD5Avg = d125.parallelStream()
+        BigDecimal d123SumD5Avg = d123.parallelStream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .divide(new BigDecimal(25), RoundingMode.HALF_UP);
-        log.info("d125SumD5Avg {}", d125SumD5Avg);
+        log.info("d123SumD5Avg {}", d123SumD5Avg);
 
-        return d5sum.subtract(d125SumD5Avg);
+        return d5sum.subtract(d123SumD5Avg);
     }
 }
