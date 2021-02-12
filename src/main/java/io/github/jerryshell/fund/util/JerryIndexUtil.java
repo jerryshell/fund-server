@@ -28,16 +28,16 @@ public class JerryIndexUtil {
 
     // 要求 fundGrowthValueList 的排序顺序为时间倒序
     public static BigDecimal calculateByFundGrowthValueList(List<BigDecimal> fundGrowthValueList) {
-        List<BigDecimal> d5 = fundGrowthValueList.parallelStream()
+        List<BigDecimal> d5 = fundGrowthValueList.stream()
                 .limit(5L)
                 .collect(Collectors.toList());
         log.info("d5 {}", d5);
 
-        BigDecimal d5sum = d5.parallelStream()
+        BigDecimal d5sum = d5.stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         log.info("d5sum {}", d5sum);
 
-        List<BigDecimal> d123 = fundGrowthValueList.parallelStream()
+        List<BigDecimal> d123 = fundGrowthValueList.stream()
                 .limit(123L)
                 .collect(Collectors.toList());
         log.info("d123 {}", d123);
