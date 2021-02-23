@@ -11,6 +11,7 @@ import io.github.jerryshell.fund.util.JerryIndexUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,13 +21,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FundService {
+    @Resource
+    private DataSourceService dataSourceService;
+
     public BigDecimal getJerryIndexByFundCode(
             String fundCode
     ) {
         log.info("fundCode {}", fundCode);
 
         // get data
-        List<EastmoneyGrowthItem> eastmoneyGrowthItemList = getEastmoneyGrowthItemList(fundCode);
+        List<EastmoneyGrowthItem> eastmoneyGrowthItemList = dataSourceService.getEastmoneyGrowthItemList(fundCode);
         log.info("eastmoneyGrowthItemList {}", eastmoneyGrowthItemList);
 
         // get expect growth
@@ -73,30 +77,6 @@ public class FundService {
                     expectGrowth
             ));
         }
-    }
-
-    // 从 fund.eastmoney.com/pingzhongdata 中获取增长率数据
-    private List<EastmoneyGrowthItem> getEastmoneyGrowthItemList(String fundCode) {
-        String url = StrUtil.format(
-                "https://fund.eastmoney.com/pingzhongdata/{}.js",
-                fundCode
-        );
-        String responseStr = HttpUtil.get(url);
-        log.info("responseStr {}", responseStr);
-
-        int jsonStrBeginIndex = responseStr.indexOf("Data_netWorthTrend = ") + "Data_netWorthTrend = ".length();
-        log.info("jsonStrBeginIndex {}", jsonStrBeginIndex);
-
-        int jsonStrEndIndex = responseStr.indexOf(";/*累计净值走势*/var Data_ACWorthTrend");
-        log.info("jsonStrEndIndex {}", jsonStrEndIndex);
-
-        String jsonStr = responseStr.substring(jsonStrBeginIndex, jsonStrEndIndex);
-        log.info("jsonStr {}", jsonStr);
-
-        List<EastmoneyGrowthItem> eastmoneyGrowthItemList = JSONUtil.toList(jsonStr, EastmoneyGrowthItem.class);
-        log.info("eastmoneyItemList {}", eastmoneyGrowthItemList);
-
-        return eastmoneyGrowthItemList;
     }
 
     // 从 fundmobapi.eastmoney.com 中获取估算增长率
