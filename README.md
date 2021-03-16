@@ -6,9 +6,13 @@
 
 投资有风险，入市须谨慎！
 
-## API
+## API 文档
 
-http://127.0.0.1:8080/swagger-ui/index.html
+本机部署：http://127.0.0.1:8080/swagger-ui/index.html
+
+Heroku：https://jerry-fund-server.herokuapp.com/swagger-ui/index.html
+
+**Heroku 冷启动需要 1-2 分钟**
 
 ## 配套前端
 
