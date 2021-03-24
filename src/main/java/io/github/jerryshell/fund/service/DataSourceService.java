@@ -14,11 +14,14 @@ import java.util.List;
 @Slf4j
 @Service
 public class DataSourceService {
-    private static final int CACHE_TIMEOUT = 1000 * 60 * 60; // 1h
+    // cache time, 1h
+    private static final int CACHE_TIMEOUT = 1000 * 60 * 60;
     private final LRUCache<String, List<EastmoneyGrowthItem>> cache = CacheUtil.newLRUCache(1024, CACHE_TIMEOUT);
 
     // 从 fund.eastmoney.com/pingzhongdata 中获取增长率数据
     public List<EastmoneyGrowthItem> getEastmoneyGrowthItemList(String fundCode) {
+        log.info("fundCode {}", fundCode);
+
         // cache
         List<EastmoneyGrowthItem> cacheData = cache.get(fundCode);
         if (cacheData != null) {

@@ -1,5 +1,7 @@
 package io.github.jerryshell.fund.service;
 
+import cn.hutool.cache.CacheUtil;
+import cn.hutool.cache.impl.LRUCache;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
@@ -21,6 +23,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FundService {
+    // cache time, 10s
+    private static final int CACHE_TIMEOUT = 1000 * 10;
+    private final LRUCache<String, BigDecimal> cache = CacheUtil.newLRUCache(1024, CACHE_TIMEOUT);
+
     @Resource
     private DataSourceService dataSourceService;
 
@@ -28,6 +34,12 @@ public class FundService {
             String fundCode
     ) {
         log.info("fundCode {}", fundCode);
+
+        // cache
+        BigDecimal cacheData = cache.get(fundCode);
+        if (cacheData != null) {
+            return cacheData;
+        }
 
         // get data
         List<EastmoneyGrowthItem> eastmoneyGrowthItemList = dataSourceService.getEastmoneyGrowthItemList(fundCode);
@@ -45,8 +57,13 @@ public class FundService {
         handleExpectGrowth(fundCode, fundGrowthList, expectGrowth);
         log.info("fundGrowthList after handleExpectGrowth {}", fundGrowthList);
 
-        // result
-        return JerryIndexUtil.calculateByFundGrowthList(fundGrowthList);
+        // calculate
+        BigDecimal jerryIndex = JerryIndexUtil.calculateByFundGrowthList(fundGrowthList);
+
+        // put cache
+        cache.put(fundCode, jerryIndex);
+
+        return jerryIndex;
     }
 
     // eastmoneyGrowthItemList -> fundGrowthList
