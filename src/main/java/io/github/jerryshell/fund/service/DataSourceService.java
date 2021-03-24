@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 @Service
 public class DataSourceService {
-    // cache time, 1h
+    // cache timeout, 1h
     private static final int CACHE_TIMEOUT = 1000 * 60 * 60;
     private final LRUCache<String, List<EastmoneyGrowthItem>> cache = CacheUtil.newLRUCache(1024, CACHE_TIMEOUT);
 

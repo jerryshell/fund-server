@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FundService {
-    // cache time, 10s
+    // cache timeout, 10s
     private static final int CACHE_TIMEOUT = 1000 * 10;
     private final LRUCache<String, BigDecimal> cache = CacheUtil.newLRUCache(1024, CACHE_TIMEOUT);
 
