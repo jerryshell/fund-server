@@ -1,11 +1,12 @@
 package io.github.jerryshell.fund.service;
 
+import cn.hutool.cache.CacheUtil;
+import cn.hutool.cache.impl.LRUCache;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import io.github.jerryshell.fund.dto.EastmoneyGrowthItem;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,9 +14,17 @@ import java.util.List;
 @Slf4j
 @Service
 public class DataSourceService {
+    private static final int CACHE_TIMEOUT = 1000 * 60 * 60; // 1h
+    private final LRUCache<String, List<EastmoneyGrowthItem>> cache = CacheUtil.newLRUCache(1024, CACHE_TIMEOUT);
+
     // 从 fund.eastmoney.com/pingzhongdata 中获取增长率数据
-    @Cacheable(cacheNames = "fund-server")
     public List<EastmoneyGrowthItem> getEastmoneyGrowthItemList(String fundCode) {
+        // cache
+        List<EastmoneyGrowthItem> cacheData = cache.get(fundCode);
+        if (cacheData != null) {
+            return cacheData;
+        }
+
         String url = StrUtil.format(
                 "https://fund.eastmoney.com/pingzhongdata/{}.js",
                 fundCode
@@ -34,6 +43,9 @@ public class DataSourceService {
 
         List<EastmoneyGrowthItem> eastmoneyGrowthItemList = JSONUtil.toList(jsonStr, EastmoneyGrowthItem.class);
         log.info("eastmoneyItemList {}", eastmoneyGrowthItemList);
+
+        // put cache
+        cache.put(fundCode, eastmoneyGrowthItemList);
 
         return eastmoneyGrowthItemList;
     }
