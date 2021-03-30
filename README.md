@@ -6,6 +6,12 @@
 
 投资有风险，入市须谨慎！
 
+## 相关项目
+
+* [前端](https://github.com/jerryshell/fund-web)
+* Spring Boot 后端（当前项目）
+* [阿里云 Serverless 后端](https://github.com/jerryshell/fund-serverless-aliyun)
+
 ## API 文档
 
 本机部署：http://127.0.0.1:8080/swagger-ui/index.html
@@ -13,10 +19,6 @@
 Heroku：https://jerry-fund-server.herokuapp.com/swagger-ui/index.html
 
 **Heroku 冷启动需要 1-2 分钟**
-
-## 配套前端
-
-https://github.com/jerryshell/fund-web
 
 ## 数据来源
 
