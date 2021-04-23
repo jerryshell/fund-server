@@ -2,6 +2,7 @@ package io.github.jerryshell.fund.service;
 
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.LRUCache;
+import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
@@ -104,8 +105,14 @@ public class FundService {
         );
         log.info("url {}", url);
 
-        String responseStr = HttpUtil.get(url);
-        log.info("responseStr {}", responseStr);
+        String responseStr;
+        try {
+            responseStr = HttpUtil.get(url);
+            log.info("responseStr {}", responseStr);
+        } catch (IORuntimeException e) {
+            log.error(e.getMessage());
+            return BigDecimal.ZERO;
+        }
 
         JSONObject responseJson = JSONUtil.parseObj(responseStr);
         log.info("responseJson {}", responseJson);
