@@ -1,5 +1,7 @@
 ![fund-server](https://socialify.git.ci/jerryshell/fund-server/image?description=1&font=Inter&forks=1&issues=1&language=1&owner=1&pattern=Brick%20Wall&pulls=1&stargazers=1&theme=Dark)
 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 ## 注意
 
 本指标为作者自用指标，仅供参考，不对其他人构成投资建议。
