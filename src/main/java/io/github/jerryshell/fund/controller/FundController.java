@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -18,11 +19,16 @@ public class FundController {
     private FundService fundService;
 
     @GetMapping("/jerryIndex/fundCode/{fundCode}")
-    BigDecimal getJerryIndexByFundCode(
+    public BigDecimal getJerryIndexByFundCode(
             @PathVariable String fundCode
     ) {
         log.info("fundCode {}", fundCode);
 
         return fundService.getJerryIndexByFundCode(fundCode);
+    }
+
+    @GetMapping("/baiduIndex")
+    public Map<String, Object> getBaiduIndex() {
+        return fundService.getBaiduIndex();
     }
 }
