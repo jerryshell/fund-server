@@ -27,14 +27,24 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FundService {
-    // cache timeout, 10s
-    private static final int CACHE_TIMEOUT = 1000 * 10;
-    private final LRUCache<String, BigDecimal> cache = CacheUtil.newLRUCache(1024, CACHE_TIMEOUT);
+    // jerryIndexCache timeout, 10s
+    private static final int JERRY_INDEX_CACHE_TIMEOUT = 1000 * 10;
+    private final LRUCache<String, BigDecimal> jerryIndexCache = CacheUtil.newLRUCache(1024, JERRY_INDEX_CACHE_TIMEOUT);
+    // baiduIndexCache timeout, 600s
+    private static final int BAIDU_INDEX_CACHE_TIMEOUT = 1000 * 60 * 10;
+    private final LRUCache<String, Map<String, Object>> baiduIndexCache = CacheUtil.newLRUCache(1, BAIDU_INDEX_CACHE_TIMEOUT);
 
     @Resource
     private DataSourceService dataSourceService;
 
     public Map<String, Object> getBaiduIndex() {
+        // cache
+        Map<String, Object> baiduIndex = baiduIndexCache.get("baiduIndex");
+        log.info("baiduIndex {}", baiduIndex);
+        if (baiduIndex != null) {
+            return baiduIndex;
+        }
+
         String response = HttpUtil.get("https://index.chinaz.com/%E5%9F%BA%E9%87%91/180");
         if (StrUtil.isBlank(response)) {
             return null;
@@ -70,6 +80,10 @@ public class FundService {
         result.put("baiduAllIndexList", baiduAllIndexList);
         result.put("baiduAllIndexListSum", baiduAllIndexListSum);
         result.put("baiduAllIndexListAvg", baiduAllIndexListAvg);
+
+        // put cache
+        baiduIndexCache.put("baiduIndex", result);
+
         return result;
     }
 
@@ -79,7 +93,7 @@ public class FundService {
         log.info("fundCode {}", fundCode);
 
         // cache
-        BigDecimal cacheData = cache.get(fundCode);
+        BigDecimal cacheData = jerryIndexCache.get(fundCode);
         if (cacheData != null) {
             return cacheData;
         }
@@ -104,7 +118,7 @@ public class FundService {
         BigDecimal jerryIndex = JerryIndexUtil.calculateByFundGrowthList(fundGrowthList);
 
         // put cache
-        cache.put(fundCode, jerryIndex);
+        jerryIndexCache.put(fundCode, jerryIndex);
 
         return jerryIndex;
     }
