@@ -29,14 +29,15 @@ import java.util.stream.Collectors;
 public class FundService {
     // jerryIndexCache timeout, 10s
     private static final int JERRY_INDEX_CACHE_TIMEOUT = 1000 * 10;
-    private final LRUCache<String, BigDecimal> jerryIndexCache = CacheUtil.newLRUCache(1024, JERRY_INDEX_CACHE_TIMEOUT);
     // baiduIndexCache timeout, 600s
     private static final int BAIDU_INDEX_CACHE_TIMEOUT = 1000 * 60 * 10;
-    private final LRUCache<String, Map<String, Object>> baiduIndexCache = CacheUtil.newLRUCache(1, BAIDU_INDEX_CACHE_TIMEOUT);
+    private final LRUCache<String, BigDecimal> jerryIndexCache = CacheUtil.newLRUCache(1024, JERRY_INDEX_CACHE_TIMEOUT);
+    private final LRUCache<String, Map<String, Object>> baiduIndexCache = CacheUtil.newLRUCache(1024, BAIDU_INDEX_CACHE_TIMEOUT);
 
     @Resource
     private DataSourceService dataSourceService;
 
+    // TODO: 2021/04/29 delete
     public Map<String, Object> getBaiduIndex() {
         // cache
         Map<String, Object> baiduIndex = baiduIndexCache.get("baiduIndex");
@@ -83,6 +84,56 @@ public class FundService {
 
         // put cache
         baiduIndexCache.put("baiduIndex", result);
+
+        return result;
+    }
+
+    public Map<String, Object> getBaiduIndexByWord(String word) {
+        // cache
+        Map<String, Object> cache = baiduIndexCache.get(word);
+        log.info("baiduIndex cache {}", cache);
+        if (cache != null) {
+            return cache;
+        }
+
+        String response = HttpUtil.get("https://index.chinaz.com/" + word + "/180");
+        if (StrUtil.isBlank(response)) {
+            return null;
+        }
+
+        String baiduDate = response.split("indexchart.baiduDate = \\[")[1];
+        baiduDate = baiduDate.split("];")[0];
+        log.info("baiduDate {}", baiduDate);
+
+        List<String> baiduDateList = Arrays.stream(baiduDate.split(","))
+                .map(item -> item.replaceAll("\"", "").trim())
+                .collect(Collectors.toList());
+        log.info("baiduDateList {}", baiduDateList);
+
+        String baiduAllIndex = response.split("indexchart.baiduAllIndex = \\[")[1];
+        baiduAllIndex = baiduAllIndex.split("];")[0];
+        log.info("baiduAllIndex {}", baiduAllIndex);
+
+        List<Integer> baiduAllIndexList = Arrays.stream(baiduAllIndex.split(","))
+                .map(String::trim)
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+        log.info("baiduAllIndexList {}", baiduAllIndexList);
+
+        Integer baiduAllIndexListSum = baiduAllIndexList.stream().reduce(Integer::sum).orElse(0);
+        log.info("baiduAllIndexListSum {}", baiduAllIndexListSum);
+
+        double baiduAllIndexListAvg = baiduAllIndexListSum * 1.0 / baiduAllIndexList.size();
+        log.info("baiduAllIndexListAvg {}", baiduAllIndexListAvg);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("baiduDateList", baiduDateList);
+        result.put("baiduAllIndexList", baiduAllIndexList);
+        result.put("baiduAllIndexListSum", baiduAllIndexListSum);
+        result.put("baiduAllIndexListAvg", baiduAllIndexListAvg);
+
+        // put cache
+        baiduIndexCache.put(word, result);
 
         return result;
     }
