@@ -37,57 +37,6 @@ public class FundService {
     @Resource
     private DataSourceService dataSourceService;
 
-    // TODO: 2021/04/29 delete
-    public Map<String, Object> getBaiduIndex() {
-        // cache
-        Map<String, Object> baiduIndex = baiduIndexCache.get("baiduIndex");
-        log.info("baiduIndex {}", baiduIndex);
-        if (baiduIndex != null) {
-            return baiduIndex;
-        }
-
-        String response = HttpUtil.get("https://index.chinaz.com/%E5%9F%BA%E9%87%91/180");
-        if (StrUtil.isBlank(response)) {
-            return null;
-        }
-
-        String baiduDate = response.split("indexchart.baiduDate = \\[")[1];
-        baiduDate = baiduDate.split("];")[0];
-        log.info("baiduDate {}", baiduDate);
-
-        List<String> baiduDateList = Arrays.stream(baiduDate.split(","))
-                .map(item -> item.replaceAll("\"", "").trim())
-                .collect(Collectors.toList());
-        log.info("baiduDateList {}", baiduDateList);
-
-        String baiduAllIndex = response.split("indexchart.baiduAllIndex = \\[")[1];
-        baiduAllIndex = baiduAllIndex.split("];")[0];
-        log.info("baiduAllIndex {}", baiduAllIndex);
-
-        List<Integer> baiduAllIndexList = Arrays.stream(baiduAllIndex.split(","))
-                .map(String::trim)
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
-        log.info("baiduAllIndexList {}", baiduAllIndexList);
-
-        Integer baiduAllIndexListSum = baiduAllIndexList.stream().reduce(Integer::sum).orElse(0);
-        log.info("baiduAllIndexListSum {}", baiduAllIndexListSum);
-
-        double baiduAllIndexListAvg = baiduAllIndexListSum * 1.0 / baiduAllIndexList.size();
-        log.info("baiduAllIndexListAvg {}", baiduAllIndexListAvg);
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("baiduDateList", baiduDateList);
-        result.put("baiduAllIndexList", baiduAllIndexList);
-        result.put("baiduAllIndexListSum", baiduAllIndexListSum);
-        result.put("baiduAllIndexListAvg", baiduAllIndexListAvg);
-
-        // put cache
-        baiduIndexCache.put("baiduIndex", result);
-
-        return result;
-    }
-
     public Map<String, Object> getBaiduIndexByWord(String word) {
         // cache
         Map<String, Object> cache = baiduIndexCache.get(word);
@@ -141,12 +90,11 @@ public class FundService {
     public BigDecimal getJerryIndexByFundCode(
             String fundCode
     ) {
-        log.info("fundCode {}", fundCode);
-
         // cache
-        BigDecimal cacheData = jerryIndexCache.get(fundCode);
-        if (cacheData != null) {
-            return cacheData;
+        BigDecimal cache = jerryIndexCache.get(fundCode);
+        log.info("jerryIndex cache {}", cache);
+        if (cache != null) {
+            return cache;
         }
 
         // get data

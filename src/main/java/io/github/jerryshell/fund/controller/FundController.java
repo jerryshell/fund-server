@@ -27,11 +27,6 @@ public class FundController {
         return fundService.getJerryIndexByFundCode(fundCode);
     }
 
-    @GetMapping("/baiduIndex")
-    public Map<String, Object> getBaiduIndex() {
-        return fundService.getBaiduIndex();
-    }
-
     @GetMapping("/baiduIndex/word/{word}")
     public Map<String, Object> getBaiduIndex(
             @PathVariable String word
