@@ -1,5 +1,6 @@
 package io.github.jerryshell.fund.controller;
 
+import io.github.jerryshell.fund.exception.QDIIException;
 import io.github.jerryshell.fund.service.FundService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -19,12 +21,28 @@ public class FundController {
     private FundService fundService;
 
     @GetMapping("/jerryIndex/fundCode/{fundCode}")
-    public BigDecimal getJerryIndexByFundCode(
+    public Map<String, Object> getJerryIndexByFundCode(
             @PathVariable String fundCode
     ) {
         log.info("fundCode {}", fundCode);
+        Map<String, Object> result = new HashMap<>();
 
-        return fundService.getJerryIndexByFundCode(fundCode);
+        BigDecimal jerryIndex;
+        try {
+            jerryIndex = fundService.getJerryIndexByFundCode(fundCode);
+            result.put("ok", true);
+            result.put("message", jerryIndex);
+        } catch (QDIIException e) {
+            e.printStackTrace();
+            result.put("ok", false);
+            result.put("message", "QDII 基金暂无净值估算数据");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("ok", false);
+            result.put("message", "服务器错误");
+        }
+
+        return result;
     }
 
     @GetMapping("/baiduIndex/word/{word}")

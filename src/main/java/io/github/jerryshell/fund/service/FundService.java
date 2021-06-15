@@ -10,6 +10,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import io.github.jerryshell.fund.dto.EastmoneyGrowthItem;
 import io.github.jerryshell.fund.entity.FundGrowth;
+import io.github.jerryshell.fund.exception.QDIIException;
 import io.github.jerryshell.fund.util.JerryIndexUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -89,7 +90,7 @@ public class FundService {
 
     public BigDecimal getJerryIndexByFundCode(
             String fundCode
-    ) {
+    ) throws QDIIException {
         // cache
         BigDecimal cache = jerryIndexCache.get(fundCode);
         log.info("jerryIndex cache {}", cache);
@@ -153,7 +154,7 @@ public class FundService {
     }
 
     // 从 fundmobapi.eastmoney.com 中获取估算增长率
-    private BigDecimal getExpectGrowthFromEastmoney(String fundCode) {
+    private BigDecimal getExpectGrowthFromEastmoney(String fundCode) throws QDIIException {
         String url = StrUtil.format(
                 "https://fundmobapi.eastmoney.com/FundMNewApi/FundMNFInfo?plat=Android&appType=ttjj&product=EFund&Version=1&deviceid=ssdfsdfsdf&Fcodes={}",
                 fundCode
@@ -177,6 +178,11 @@ public class FundService {
 
         Object expectGrowthObj = datas.getJSONObject(0).get("GSZZL");
         log.info("expectGrowthObj {}", expectGrowthObj);
+
+        // 当前产品为 QDII 基金，投资于境外市场，暂无净值估算数据。
+        if ("--".equals(expectGrowthObj)) {
+            throw new QDIIException();
+        }
 
         return new BigDecimal((String) expectGrowthObj);
     }
