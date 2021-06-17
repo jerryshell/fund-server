@@ -24,4 +24,4 @@ Heroku：https://jerry-fund-server.herokuapp.com/swagger-ui/index.html
 
 ## 数据来源
 
-https://fund.eastmoney.com
+https://fund.eastmoney.com （暂不支持 QDII 基金）
