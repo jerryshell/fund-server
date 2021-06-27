@@ -31,6 +31,7 @@ public class FundService {
     private static final int JERRY_INDEX_CACHE_TIMEOUT = 1000 * 10;
     // baiduIndexCache timeout: 600s
     private static final int BAIDU_INDEX_CACHE_TIMEOUT = 1000 * 60 * 10;
+
     private final LRUCache<String, BigDecimal> jerryIndexCache = CacheUtil.newLRUCache(1024, JERRY_INDEX_CACHE_TIMEOUT);
     private final LRUCache<String, BaiduIndex> baiduIndexCache = CacheUtil.newLRUCache(1024, BAIDU_INDEX_CACHE_TIMEOUT);
 
@@ -88,9 +89,7 @@ public class FundService {
         return baiduIndex;
     }
 
-    public BigDecimal getJerryIndexByFundCode(
-            String fundCode
-    ) throws QDIIException {
+    public BigDecimal getJerryIndexByFundCode(String fundCode) throws QDIIException {
         // cache
         BigDecimal cache = jerryIndexCache.get(fundCode);
         log.info("jerryIndex cache {}", cache);
@@ -116,6 +115,7 @@ public class FundService {
 
         // calculate
         BigDecimal jerryIndex = JerryIndexUtil.calculateByFundGrowthList(fundGrowthList);
+        log.info("jerryIndex {}", jerryIndex);
 
         // put cache
         jerryIndexCache.put(fundCode, jerryIndex);
@@ -124,7 +124,10 @@ public class FundService {
     }
 
     // eastmoneyGrowthItemList -> fundGrowthList
-    private List<FundGrowth> buildFundGrowthListByEastmoneyItemList(String fundCode, List<EastmoneyGrowthItem> eastmoneyGrowthItemList) {
+    private List<FundGrowth> buildFundGrowthListByEastmoneyItemList(
+            String fundCode,
+            List<EastmoneyGrowthItem> eastmoneyGrowthItemList
+    ) {
         return eastmoneyGrowthItemList.parallelStream()
                 .map(item -> new FundGrowth(
                         fundCode,
@@ -135,7 +138,11 @@ public class FundService {
     }
 
     // 如果 fundGrowthList 没有今日数据，则将 expectGrowth 作为今日数据加入到 fundGrowthList 中
-    private void handleExpectGrowth(String fundCode, List<FundGrowth> fundGrowthList, BigDecimal expectGrowth) {
+    private void handleExpectGrowth(
+            String fundCode,
+            List<FundGrowth> fundGrowthList,
+            BigDecimal expectGrowth
+    ) {
         String todayDateStr = LocalDate.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         log.info("todayDateStr {}", todayDateStr);

@@ -16,6 +16,7 @@ import java.util.List;
 public class DataSourceService {
     // cache timeout: 1h
     private static final int CACHE_TIMEOUT = 1000 * 60 * 60;
+
     private final LRUCache<String, List<EastmoneyGrowthItem>> cache = CacheUtil.newLRUCache(1024, CACHE_TIMEOUT);
 
     // 从 fund.eastmoney.com/pingzhongdata 中获取增长率数据
