@@ -1,5 +1,6 @@
 package io.github.jerryshell.fund.controller;
 
+import io.github.jerryshell.fund.dto.BaiduIndex;
 import io.github.jerryshell.fund.exception.QDIIException;
 import io.github.jerryshell.fund.service.FundService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,12 +46,12 @@ public class FundController {
         return result;
     }
 
-    @GetMapping("/baiduIndex/word/{word}")
-    public Map<String, Object> getBaiduIndex(
-            @PathVariable String word
+    @GetMapping("/baiduIndex/keyword/{keyword}")
+    public BaiduIndex getBaiduIndexByKeyword(
+            @PathVariable String keyword
     ) {
-        log.info("word {}", word);
+        log.info("keyword {}", keyword);
 
-        return fundService.getBaiduIndexByWord(word);
+        return fundService.getBaiduIndexByKeyword(keyword);
     }
 }

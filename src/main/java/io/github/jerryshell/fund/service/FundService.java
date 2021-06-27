@@ -8,6 +8,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import io.github.jerryshell.fund.dto.BaiduIndex;
 import io.github.jerryshell.fund.dto.EastmoneyGrowthItem;
 import io.github.jerryshell.fund.entity.FundGrowth;
 import io.github.jerryshell.fund.exception.QDIIException;
@@ -20,33 +21,31 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FundService {
-    // jerryIndexCache timeout, 10s
+    // jerryIndexCache timeout: 10s
     private static final int JERRY_INDEX_CACHE_TIMEOUT = 1000 * 10;
-    // baiduIndexCache timeout, 600s
+    // baiduIndexCache timeout: 600s
     private static final int BAIDU_INDEX_CACHE_TIMEOUT = 1000 * 60 * 10;
     private final LRUCache<String, BigDecimal> jerryIndexCache = CacheUtil.newLRUCache(1024, JERRY_INDEX_CACHE_TIMEOUT);
-    private final LRUCache<String, Map<String, Object>> baiduIndexCache = CacheUtil.newLRUCache(1024, BAIDU_INDEX_CACHE_TIMEOUT);
+    private final LRUCache<String, BaiduIndex> baiduIndexCache = CacheUtil.newLRUCache(1024, BAIDU_INDEX_CACHE_TIMEOUT);
 
     @Resource
     private DataSourceService dataSourceService;
 
-    public Map<String, Object> getBaiduIndexByWord(String word) {
+    public BaiduIndex getBaiduIndexByKeyword(String keyword) {
         // cache
-        Map<String, Object> cache = baiduIndexCache.get(word);
+        BaiduIndex cache = baiduIndexCache.get(keyword);
         log.info("baiduIndex cache {}", cache);
         if (cache != null) {
             return cache;
         }
 
-        String response = HttpUtil.get("https://index.chinaz.com/" + word + "/180");
+        String response = HttpUtil.get("https://index.chinaz.com/" + keyword + "/180");
         if (StrUtil.isBlank(response)) {
             return null;
         }
@@ -76,16 +75,17 @@ public class FundService {
         double baiduAllIndexListAvg = baiduAllIndexListSum * 1.0 / baiduAllIndexList.size();
         log.info("baiduAllIndexListAvg {}", baiduAllIndexListAvg);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("baiduDateList", baiduDateList);
-        result.put("baiduAllIndexList", baiduAllIndexList);
-        result.put("baiduAllIndexListSum", baiduAllIndexListSum);
-        result.put("baiduAllIndexListAvg", baiduAllIndexListAvg);
+        BaiduIndex baiduIndex = new BaiduIndex(
+                baiduDateList,
+                baiduAllIndexList,
+                baiduAllIndexListSum,
+                baiduAllIndexListAvg
+        );
 
         // put cache
-        baiduIndexCache.put(word, result);
+        baiduIndexCache.put(keyword, baiduIndex);
 
-        return result;
+        return baiduIndex;
     }
 
     public BigDecimal getJerryIndexByFundCode(
