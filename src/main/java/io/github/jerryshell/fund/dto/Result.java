@@ -11,11 +11,12 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class Result<T> {
     private Boolean success;
+    private ResultCode code;
     private String message;
     private T data;
 
     public static <T> Result<T> success(String message, T data) {
-        return new Result<>(true, message, data);
+        return new Result<>(true, ResultCode.SUCCESS, message, data);
     }
 
     public static <T> Result<T> success(String message) {
@@ -31,7 +32,7 @@ public class Result<T> {
     }
 
     public static <T> Result<T> error(String message, T data) {
-        return new Result<>(false, message, data);
+        return new Result<>(false, ResultCode.ERROR, message, data);
     }
 
     public static <T> Result<T> error(String message) {
